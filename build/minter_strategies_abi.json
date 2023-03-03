@@ -1,0 +1,56 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "_nft_contract",
+                "type": "felt"
+            },
+            {
+                "name": "_registery",
+                "type": "felt"
+            },
+            {
+                "name": "_erc20_contract",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "nftContract",
+        "outputs": [
+            {
+                "name": "nftContract",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_tokens_len",
+                "type": "felt"
+            },
+            {
+                "name": "_tokens",
+                "type": "felt*"
+            },
+            {
+                "name": "_allocation_len",
+                "type": "felt"
+            },
+            {
+                "name": "_allocation",
+                "type": "felt*"
+            }
+        ],
+        "name": "mint",
+        "outputs": [],
+        "type": "function"
+    }
+]

@@ -1,0 +1,486 @@
+[
+    {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "allocation",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "TokenAllocation",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "data": [
+            {
+                "name": "from_",
+                "type": "felt"
+            },
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "Transfer",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "approved",
+                "type": "felt"
+            },
+            {
+                "name": "tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "operator",
+                "type": "felt"
+            },
+            {
+                "name": "approved",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "ApprovalForAll",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "minter",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "NewMinterSet",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "token_id_",
+                "type": "Uint256"
+            },
+            {
+                "name": "allocations_len",
+                "type": "felt"
+            },
+            {
+                "name": "allocations",
+                "type": "TokenAllocation*"
+            }
+        ],
+        "keys": [],
+        "name": "NewStrategyMinted",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "felt"
+            },
+            {
+                "name": "_symbol",
+                "type": "felt"
+            },
+            {
+                "name": "_registery",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "name": "totalSupply",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_index",
+                "type": "Uint256"
+            }
+        ],
+        "name": "tokenByIndex",
+        "outputs": [
+            {
+                "name": "tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "felt"
+            },
+            {
+                "name": "_index",
+                "type": "Uint256"
+            }
+        ],
+        "name": "tokenOfOwnerByIndex",
+        "outputs": [
+            {
+                "name": "tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_interfaceId",
+                "type": "felt"
+            }
+        ],
+        "name": "supportsInterface",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "symbol",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "felt"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "name": "ownerOf",
+        "outputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "name": "getApproved",
+        "outputs": [
+            {
+                "name": "approved",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "felt"
+            },
+            {
+                "name": "_operator",
+                "type": "felt"
+            }
+        ],
+        "name": "isApprovedForAll",
+        "outputs": [
+            {
+                "name": "isApproved",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "name": "tokenURI",
+        "outputs": [
+            {
+                "name": "tokenURI",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "baseURI",
+        "outputs": [
+            {
+                "name": "baseURI",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_minter",
+                "type": "felt"
+            }
+        ],
+        "name": "setMinter",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_to",
+                "type": "felt"
+            },
+            {
+                "name": "_tokens_len",
+                "type": "felt"
+            },
+            {
+                "name": "_tokens",
+                "type": "felt*"
+            },
+            {
+                "name": "_allocations_len",
+                "type": "felt"
+            },
+            {
+                "name": "_allocations",
+                "type": "felt*"
+            }
+        ],
+        "name": "mint",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_from",
+                "type": "felt"
+            },
+            {
+                "name": "token_id_",
+                "type": "Uint256"
+            }
+        ],
+        "name": "burn",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_baseURI",
+                "type": "felt"
+            }
+        ],
+        "name": "setBaseURI",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_from",
+                "type": "felt"
+            },
+            {
+                "name": "_to",
+                "type": "felt"
+            },
+            {
+                "name": "_token_id_",
+                "type": "Uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_from",
+                "type": "felt"
+            },
+            {
+                "name": "_to",
+                "type": "felt"
+            },
+            {
+                "name": "_token_id",
+                "type": "Uint256"
+            },
+            {
+                "name": "_data_len",
+                "type": "felt"
+            },
+            {
+                "name": "_data",
+                "type": "felt*"
+            }
+        ],
+        "name": "safeTransferFrom",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_to",
+                "type": "felt"
+            },
+            {
+                "name": "_token_id",
+                "type": "Uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_operator",
+                "type": "felt"
+            },
+            {
+                "name": "_approved",
+                "type": "felt"
+            }
+        ],
+        "name": "setApprovalForAll",
+        "outputs": [],
+        "type": "function"
+    }
+]
