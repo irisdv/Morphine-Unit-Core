@@ -29,7 +29,7 @@
                 "type": "felt"
             },
             {
-                "name": "_drip_hash",
+                "name": "_container_hash",
                 "type": "felt"
             }
         ],
@@ -51,10 +51,10 @@
     },
     {
         "inputs": [],
-        "name": "dripFactory",
+        "name": "containerFactory",
         "outputs": [
             {
-                "name": "drip_factory",
+                "name": "container_factory",
                 "type": "felt"
             }
         ],
@@ -63,10 +63,10 @@
     },
     {
         "inputs": [],
-        "name": "dripHash",
+        "name": "containerHash",
         "outputs": [
             {
-                "name": "drip_hash",
+                "name": "container_hash",
                 "type": "felt"
             }
         ],
@@ -117,11 +117,11 @@
     {
         "inputs": [
             {
-                "name": "_drip_manager",
+                "name": "_borrow_manager",
                 "type": "felt"
             }
         ],
-        "name": "isDripManager",
+        "name": "isBorrowManager",
         "outputs": [
             {
                 "name": "state",
@@ -149,40 +149,11 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "name": "_id",
-                "type": "felt"
-            }
-        ],
-        "name": "idToDripManager",
-        "outputs": [
-            {
-                "name": "dripManager",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "poolsLength",
         "outputs": [
             {
                 "name": "poolsLength",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "dripManagerLength",
-        "outputs": [
-            {
-                "name": "dripManagerLength",
                 "type": "felt"
             }
         ],
@@ -214,11 +185,11 @@
     {
         "inputs": [
             {
-                "name": "_drip_factory",
+                "name": "_container_factory",
                 "type": "felt"
             }
         ],
-        "name": "setDripFactory",
+        "name": "setContainerFactory",
         "outputs": [],
         "type": "function"
     },
@@ -236,11 +207,11 @@
     {
         "inputs": [
             {
-                "name": "_new_drip_hash",
+                "name": "_new_container_hash",
                 "type": "felt"
             }
         ],
-        "name": "setDripHash",
+        "name": "setContainerHash",
         "outputs": [],
         "type": "function"
     },
@@ -252,17 +223,6 @@
             }
         ],
         "name": "addPool",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "_drip_manager",
-                "type": "felt"
-            }
-        ],
-        "name": "addDripManager",
         "outputs": [],
         "type": "function"
     }

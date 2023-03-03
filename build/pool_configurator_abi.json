@@ -1,0 +1,210 @@
+[
+    {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "data": [
+            {
+                "name": "borrow_module",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "NewBorrowModuleConnected",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "borrow_module",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "BorrowModuleForbidden",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "value",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "NewWithdrawFee",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "value",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "NewExpectedLiquidityLimit",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "interest_rate_model",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "NewInterestRateModel",
+        "type": "event"
+    },
+    {
+        "data": [],
+        "keys": [],
+        "name": "BorrowFrozen",
+        "type": "event"
+    },
+    {
+        "data": [],
+        "keys": [],
+        "name": "BorrowUnfrozen",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "new_pool_configurator",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "PoolConfiguratorUpgraded",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_pool",
+                "type": "felt"
+            },
+            {
+                "name": "_base_withdraw_fee",
+                "type": "Uint256"
+            },
+            {
+                "name": "_interest_rate_model",
+                "type": "felt"
+            },
+            {
+                "name": "_expected_liquidity_limit",
+                "type": "Uint256"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_borrow_module",
+                "type": "felt"
+            }
+        ],
+        "name": "connectBorrowModule",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_borrow_module",
+                "type": "felt"
+            }
+        ],
+        "name": "forbidBorrowModule",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_base_withdraw_fee",
+                "type": "Uint256"
+            }
+        ],
+        "name": "setWithdrawFee",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_expected_liquidity_limit",
+                "type": "Uint256"
+            }
+        ],
+        "name": "setExpectedLiquidityLimit",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_interest_rate_model",
+                "type": "felt"
+            }
+        ],
+        "name": "updateInterestRateModel",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "freezeBorrow",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "unfreezeBorrow",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_pool_configurator",
+                "type": "felt"
+            }
+        ],
+        "name": "upgradeConfigurator",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getPool",
+        "outputs": [
+            {
+                "name": "pool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

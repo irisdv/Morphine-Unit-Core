@@ -21,17 +21,25 @@ namespace IPool {
     func unfreezeBorrow() {
     }
 
-    func freezeRepay() {
-    }
-
-    func unfreezeRepay() {
-    }
-
     func setWithdrawFee(withdraw_fee: Uint256) {
     }
 
     func setExpectedLiquidityLimit(_expected_liquidity_limit: Uint256) {
     }
+
+    func updateInterestRateModel(interest_rate_model: felt) {
+    }
+
+    func connectBorrowModule(borrow_module: felt) {
+    }
+
+    func setForbidMask(forbidden_mask: Uint256) {
+    }
+
+    func setConfigurator(pool_configurator: felt) {
+    }
+
+
 
     //supply stuff
 
@@ -65,13 +73,10 @@ namespace IPool {
 
     //borrow stuff
 
-    func connectDripManager(drip_manager: felt) {
-    }
-
     func borrow(borrow_amount: Uint256, drip: felt) {
     }
 
-    func repayDripDebt(borrowed_amount: Uint256, profit: Uint256, loss: Uint256) {
+    func repayContainerDebt(borrowed_amount: Uint256, profit: Uint256, loss: Uint256) {
     }
 
 
@@ -83,16 +88,28 @@ namespace IPool {
     func isBorrowFrozen() -> (state: felt) {
     }
 
-    func isRepayFrozen() -> (state: felt) {
-    }
-
     func interestRateModel() -> (interestRateModel: felt) {
     }
 
-    func connectedDripManager() -> (dripManager: felt) {
+    func isBorrowModuleAllowed(caller: felt) -> (state: felt) {
+    }
+
+    func forbiddenMask() -> (forbiddenMask: Uint256) {
+    }
+
+    func borrowModuleMask(borrow_module: felt) -> (borrowModuleMask: Uint256) {
+    }
+
+    func borrowModuleByMask(borrow_module_mask: Uint256) -> (borrowModule: felt) {
+    }
+
+    func borrowModuleById(id: felt) -> (borrowModule: felt) {
     }
 
     func getRegistery() -> (registery: felt) {
+    }
+
+    func poolConfigurator() -> (poolConfigurator: felt) {
     }
 
     func asset() -> (asset: felt) {

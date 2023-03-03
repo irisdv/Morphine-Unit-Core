@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.uint256 import Uint256
-from morphine.interfaces.IDripConfigurator import AllowedToken
+from morphine.interfaces.IBorrowConfigurator import AllowedToken
 
 @contract_interface
 namespace IDripInfraFactory {

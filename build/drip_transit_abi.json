@@ -50,7 +50,7 @@
                 "type": "felt"
             },
             {
-                "name": "drip",
+                "name": "container",
                 "type": "felt"
             },
             {
@@ -59,7 +59,7 @@
             }
         ],
         "keys": [],
-        "name": "OpenDrip",
+        "name": "OpenContainer",
         "type": "event"
     },
     {
@@ -74,7 +74,7 @@
             }
         ],
         "keys": [],
-        "name": "CloseDrip",
+        "name": "CloseContainer",
         "type": "event"
     },
     {
@@ -163,7 +163,7 @@
             }
         ],
         "keys": [],
-        "name": "LiquidateDrip",
+        "name": "LiquidateContainer",
         "type": "event"
     },
     {
@@ -186,7 +186,7 @@
             }
         ],
         "keys": [],
-        "name": "LiquidateExpiredDrip",
+        "name": "LiquidateExpiredContainer",
         "type": "event"
     },
     {
@@ -201,7 +201,7 @@
             }
         ],
         "keys": [],
-        "name": "TransferDrip",
+        "name": "TransferContainer",
         "type": "event"
     },
     {
@@ -220,7 +220,7 @@
             }
         ],
         "keys": [],
-        "name": "TransferDripAllowed",
+        "name": "TransferContainerAllowed",
         "type": "event"
     },
     {
@@ -256,7 +256,7 @@
     {
         "inputs": [
             {
-                "name": "_drip_manager",
+                "name": "_borrow_manager",
                 "type": "felt"
             },
             {
@@ -287,7 +287,7 @@
                 "type": "Uint256"
             }
         ],
-        "name": "openDrip",
+        "name": "openContainer",
         "outputs": [],
         "type": "function"
     },
@@ -318,7 +318,7 @@
                 "type": "felt*"
             }
         ],
-        "name": "openDripMultiCall",
+        "name": "openContainerMultiCall",
         "outputs": [],
         "type": "function"
     },
@@ -345,38 +345,7 @@
                 "type": "felt*"
             }
         ],
-        "name": "closeDrip",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "_borrower",
-                "type": "felt"
-            },
-            {
-                "name": "_to",
-                "type": "felt"
-            },
-            {
-                "name": "_call_array_len",
-                "type": "felt"
-            },
-            {
-                "name": "_call_array",
-                "type": "AccountCallArray*"
-            },
-            {
-                "name": "_calldata_len",
-                "type": "felt"
-            },
-            {
-                "name": "_calldata",
-                "type": "felt*"
-            }
-        ],
-        "name": "liquidateDrip",
+        "name": "closeContainer",
         "outputs": [],
         "type": "function"
     },
@@ -407,7 +376,38 @@
                 "type": "felt*"
             }
         ],
-        "name": "liquidateExpiredDrip",
+        "name": "liquidateContainer",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_borrower",
+                "type": "felt"
+            },
+            {
+                "name": "_to",
+                "type": "felt"
+            },
+            {
+                "name": "_call_array_len",
+                "type": "felt"
+            },
+            {
+                "name": "_call_array",
+                "type": "AccountCallArray*"
+            },
+            {
+                "name": "_calldata_len",
+                "type": "felt"
+            },
+            {
+                "name": "_calldata",
+                "type": "felt*"
+            }
+        ],
+        "name": "liquidateExpiredContainer",
         "outputs": [],
         "type": "function"
     },
@@ -512,7 +512,7 @@
                 "type": "felt"
             }
         ],
-        "name": "transferDripOwnership",
+        "name": "transferContainerOwnership",
         "outputs": [],
         "type": "function"
     },
@@ -527,7 +527,7 @@
                 "type": "felt"
             }
         ],
-        "name": "approveDripTransfers",
+        "name": "approveContainerTransfers",
         "outputs": [],
         "type": "function"
     },
@@ -564,7 +564,7 @@
                 "type": "Uint256"
             }
         ],
-        "name": "setDripLimits",
+        "name": "setBorrowLimits",
         "outputs": [],
         "type": "function"
     },
@@ -581,10 +581,10 @@
     },
     {
         "inputs": [],
-        "name": "dripManager",
+        "name": "borrowManager",
         "outputs": [
             {
-                "name": "dripManager",
+                "name": "borrowManager",
                 "type": "felt"
             }
         ],
@@ -618,7 +618,7 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
@@ -639,11 +639,11 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
-        "name": "calcDripHealthFactor",
+        "name": "calcContainerHealthFactor",
         "outputs": [
             {
                 "name": "health_factor",
@@ -660,7 +660,7 @@
                 "type": "felt"
             }
         ],
-        "name": "hasOpenedDrip",
+        "name": "hasOpenedContainer",
         "outputs": [
             {
                 "name": "state",

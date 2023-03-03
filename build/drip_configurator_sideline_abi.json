@@ -104,21 +104,6 @@
     {
         "data": [
             {
-                "name": "chi_threshold",
-                "type": "Uint256"
-            },
-            {
-                "name": "hf_check_interval",
-                "type": "Uint256"
-            }
-        ],
-        "keys": [],
-        "name": "FastCheckFeesUpdated",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
                 "name": "fee_interest",
                 "type": "Uint256"
             },
@@ -157,23 +142,23 @@
     {
         "data": [
             {
-                "name": "drip_transit",
+                "name": "borrow_transit",
                 "type": "felt"
             }
         ],
         "keys": [],
-        "name": "DripTransitUpgraded",
+        "name": "BorrowTransitUpgraded",
         "type": "event"
     },
     {
         "data": [
             {
-                "name": "drip_configurator",
+                "name": "borrow_configurator",
                 "type": "felt"
             }
         ],
         "keys": [],
-        "name": "DripConfiguratorUpgraded",
+        "name": "BorrowConfiguratorUpgraded",
         "type": "event"
     },
     {
@@ -238,7 +223,11 @@
     {
         "inputs": [
             {
-                "name": "_drip_manager",
+                "name": "_borrow_manager",
+                "type": "felt"
+            },
+            {
+                "name": "_borrow_transit",
                 "type": "felt"
             }
         ],
@@ -441,7 +430,7 @@
     {
         "inputs": [
             {
-                "name": "_drip_transit",
+                "name": "_borrow_transit",
                 "type": "felt"
             },
             {
@@ -449,14 +438,14 @@
                 "type": "felt"
             }
         ],
-        "name": "upgradeDripTransit",
+        "name": "upgradeBorrowTransit",
         "outputs": [],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "_drip_configurator",
+                "name": "_borrow_configurator",
                 "type": "felt"
             }
         ],
@@ -529,10 +518,10 @@
     },
     {
         "inputs": [],
-        "name": "dripManager",
+        "name": "borrowManager",
         "outputs": [
             {
-                "name": "dripManager",
+                "name": "borrowManager",
                 "type": "felt"
             }
         ],

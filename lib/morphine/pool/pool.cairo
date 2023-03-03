@@ -1,6 +1,6 @@
 %lang starknet
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_contract_address,
@@ -13,8 +13,10 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     uint256_lt,
     uint256_le,
+    uint256_pow2
 )
 from starkware.cairo.common.math import assert_not_zero, assert_le, unsigned_div_rem
+from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor, bitwise_or
 
 from openzeppelin.token.erc20.library import ERC20, ERC20_allowances
 from openzeppelin.token.erc20.IERC20 import IERC20
@@ -27,12 +29,11 @@ from morphine.utils.fixedpointmathlib import mul_div_down, mul_div_up
 from morphine.utils.safeerc20 import SafeERC20
 from morphine.utils.various import uint256_permillion, PRECISION, SECONDS_PER_YEAR
 from morphine.interfaces.IRegistery import IRegistery
-from morphine.interfaces.IDripManager import IDripManager
 from morphine.interfaces.IInterestRateModel import IInterestRateModel
 
 /// @title Pool
 /// @author 0xSacha
-/// @dev Pool contract, respecting ERC4626 implementation
+/// @dev Pool contract, respecting ERC4626 implementation from yagi.
 /// @custom:experimental This is an experimental contract.
 
 // Events
@@ -46,22 +47,6 @@ func Withdraw(from_: felt, to: felt, amount: Uint256, shares: Uint256) {
 }
 
 @event
-func BorrowFrozen() {
-}
-
-@event
-func BorrowUnfrozen() {
-}
-
-@event
-func RepayFrozen() {
-}
-
-@event
-func RepayUnfrozen() {
-}
-
-@event
 func Borrow(from_: felt, amount: Uint256) {
 }
 
@@ -70,31 +55,36 @@ func RepayDebt(borrowedAmount: Uint256, profit: Uint256, loss: Uint256) {
 }
 
 @event
-func NewWithdrawFee(value: Uint256) {
-}
-
-@event
-func NewExpectedLiquidityLimit(value: Uint256) {
-}
-
-@event
-func NewDripManagerConnected(drip: felt) {
-}
-
-@event
 func UncoveredLoss(value: Uint256) {
 }
 
-@event
-func NewInterestRateModel(interest_rate_model: felt) {
-}
+
+
+
+
+
 
 
 // Storage
 
+@storage_var
+func borrow_module_from_mask(borrow_module_mask: Uint256) -> (token: felt) {
+}
 
 @storage_var
-func drip_manager() -> (res: felt) {
+func borrow_module_length() -> (length: felt) {
+}
+
+@storage_var
+func borrow_module_mask(borrow_module: felt) -> (mask: Uint256) {
+}
+
+@storage_var
+func forbidden_borrow_module_mask() -> (mask: Uint256) {
+}
+
+@storage_var
+func pool_configurator() -> (pool_configurator: felt) {
 }
 
 @storage_var
@@ -137,22 +127,30 @@ func last_updated_timestamp() -> (res: felt) {
 func borrow_frozen() -> (res: felt) {
 }
 
-@storage_var
-func repay_frozen() -> (res: felt) {
-}
 
 // Protectors
 
-// @notice Initialize the contract
-// @dev: assert caller is drip manager
-func assert_only_drip_manager{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+// @notice Assert caller is borrow manager
+func assert_allowed_borrow_module{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr : BitwiseBuiltin*}() {
+        alloc_locals;
         let (caller_) = get_caller_address();
-        let (drip_manager_) = drip_manager.read();
+        let (borrow_manager_) = isBorrowModuleAllowed(caller_);
         with_attr error_message("caller not authorized") {
-            assert caller_ = drip_manager_;
+            assert caller_ = borrow_manager_;
         }
         return ();
     }
+
+// @notice: Assert caller is pool configurator
+func assert_only_pool_configurator{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+    let (caller_) = get_caller_address();
+    let (pool_configurator_) = pool_configurator.read();
+    with_attr error_message("only the configurator can call this function") {
+        assert caller_ = pool_configurator_;
+    }
+    return();
+}
 
 
 
@@ -171,30 +169,26 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     _asset: felt,
     _name: felt,
     _symbol: felt,
-    _expected_liquidity_limit: Uint256,
-    _interest_rate_model: felt
     ) {
     with_attr error_message("zero address not allowed") {
         assert_not_zero(_registery);
     }
     let (decimals_) = IERC20.decimals(_asset);
     ERC20.initializer(_name, _symbol, decimals_);
+    let (pool_configurator_) = get_caller_address();
+    pool_configurator.write(pool_configurator_);
     underlying.write(_asset);
     RegisteryAccess.initializer(_registery);
-    expected_liquidity_limit.write(_expected_liquidity_limit);
     cumulative_index.write(Uint256(PRECISION, 0));
-    update_interest_rate_model(_interest_rate_model);
     return ();
 }
 
 // Actions
 
-// Configurator stuff
-
 // @notice pause pool contract
 @external
 func pause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    RegisteryAccess.assert_only_owner();
+    assert_only_pool_configurator();
     Pausable.assert_not_paused();
     Pausable._pause();
     return ();
@@ -203,50 +197,29 @@ func pause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
 // @notice unpause pool contract
 @external
 func unpause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    RegisteryAccess.assert_only_owner();
+    assert_only_pool_configurator();
     Pausable.assert_paused();
     Pausable._unpause();
     return ();
 }
 
+// Configurator stuff
+
 // @notice freeze borrow from pool
 @external
 func freezeBorrow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    RegisteryAccess.assert_only_owner();
+    assert_only_pool_configurator();
     assert_borrow_not_frozen();
     borrow_frozen.write(1);
-    BorrowFrozen.emit();
     return ();
 }
 
 // @notice unfreeze borrow from pool
 @external
 func unfreezeBorrow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    RegisteryAccess.assert_only_owner();
+    assert_only_pool_configurator();
     assert_borrow_frozen();
     borrow_frozen.write(0);
-    BorrowUnfrozen.emit();
-    return ();
-}
-
-// @notice freeze repay from pool
-@external
-func freezeRepay{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    RegisteryAccess.assert_only_owner();
-    assert_repay_not_frozen();
-    repay_frozen.write(1);
-    RepayFrozen.emit();
-    return ();
-}
-
-// @notice unfreeze repay from pool
-@external
-func unfreezeRepay{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    RegisteryAccess.assert_only_owner();
-    assert_repay_frozen();
-    repay_frozen.write(0);
-    let (caller_) = get_caller_address();
-    RepayUnfrozen.emit();
     return ();
 }
 
@@ -256,15 +229,8 @@ func unfreezeRepay{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 func setWithdrawFee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     _base_withdraw_fee: Uint256
 ) {
-    RegisteryAccess.assert_only_owner();
-    let (max_fee_,_) = unsigned_div_rem(PRECISION, 100);
-    let (is_allowed_amount1_) = uint256_le(_base_withdraw_fee, Uint256(max_fee_, 0));
-    let (is_allowed_amount2_) = uint256_le(Uint256(0, 0), _base_withdraw_fee);
-    with_attr error_message("withdraw fee 1 max") {
-        assert is_allowed_amount1_ * is_allowed_amount2_ = 1;
-    }
+    assert_only_pool_configurator();
     withdraw_fee.write(_base_withdraw_fee);
-    NewWithdrawFee.emit(_base_withdraw_fee);
     return ();
 }
 
@@ -274,9 +240,8 @@ func setWithdrawFee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 func setExpectedLiquidityLimit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     _expected_liquidity_limit: Uint256
 ) {
-    RegisteryAccess.assert_only_owner();
+    assert_only_pool_configurator();
     expected_liquidity_limit.write(_expected_liquidity_limit);
-    NewExpectedLiquidityLimit.emit(_expected_liquidity_limit);
     return ();
 }
 
@@ -286,30 +251,59 @@ func setExpectedLiquidityLimit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, r
 func updateInterestRateModel{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     _interest_rate_model: felt
 ) {
-    RegisteryAccess.assert_only_owner();
+    assert_only_pool_configurator();
     update_interest_rate_model(_interest_rate_model);
     return ();
 }
 
-// @notice connect a new drip manager to a pool
-// @param _drip_manager drip manager address
+// @notice connect a new borrow module to the pool
+// @param _borrow_module borrow module manager address
+
 @external
-func connectDripManager{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _drip_manager: felt
+func connectBorrowModule{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    _borrow_module: felt
 ) {
     alloc_locals;
-    RegisteryAccess.assert_only_owner();
-    let (this_) = get_contract_address();
-    let (wanted_pool_) = IDripManager.getPool(_drip_manager);
-
-    with_attr error_message("incompatible pool for drip manager") {
-        assert this_ = wanted_pool_;
+    assert_only_pool_configurator();
+    let (borrow_module_length_) = borrow_module_length.read();
+    let (is_le_) = uint256_le(Uint256(256, 0), Uint256(borrow_module_length_, 0));
+    with_attr error_message("too much borrow modules") {
+        assert is_le_ = 0;
     }
 
-    drip_manager.write(_drip_manager);
-    NewDripManagerConnected.emit(_drip_manager);
+    let (borrow_module_mask_) = uint256_pow2(Uint256(borrow_module_length_, 0));
+    borrow_module_mask.write(_borrow_module, borrow_module_mask_);
+    borrow_module_from_mask.write(borrow_module_mask_, _borrow_module);
+    borrow_module_length.write(borrow_module_length_ + 1);
     return ();
 }
+
+// @notice: Set Forbid Mask
+// @dev: A drip holding forbidden tokens have limited allowed interactions
+// @param: _fobid_mask Forbidden Mask to Set (felt)
+@external
+func setForbidMask{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    _fobid_mask: Uint256
+) {
+    assert_only_pool_configurator();
+    forbidden_borrow_module_mask.write(_fobid_mask);
+    return ();
+}
+
+// @notice: Upgrade Drip Configurator
+// @param: _drip_configurator Drip Configurator (felt)
+@external
+func setConfigurator{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    _pool_configurator: felt
+) {
+    assert_only_pool_configurator();
+    pool_configurator.write(_pool_configurator);
+    return ();
+}
+
+
+
+  
 
 // Lender stuff
 
@@ -357,7 +351,7 @@ func deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return (shares_,);
 }
 
-// @notice mint LP 
+// @notice mint pool tokens 
 // @param _shares amount of shares you want to mint
 // @param _receiver address who will receive the LP token
 // @returns assets the number of assets you receive
@@ -421,6 +415,8 @@ func withdraw{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (step1_) = SafeUint256.mul(_assets, Uint256(PRECISION,0));
     let (step2_) = SafeUint256.sub_lt(Uint256(PRECISION,0), withdraw_fee_);
     let(assets_required_,_) = SafeUint256.div_rem(step1_, step2_);
+
+
     let (supply_) = ERC20.total_supply();
     let (supply_is_zero) = uint256_eq(supply_, Uint256(0, 0));
     let (all_assets_) = totalAssets();
@@ -528,44 +524,43 @@ func redeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
 // @notice borrow from pool
 // @param _borrow_amount amount borrow from the pool
-// @param _drip address of the drip where you will got the assets borrowed
+// @param _container address of the container 
 @external
-func borrow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _borrow_amount: Uint256, _drip: felt
+func borrow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(
+    _borrow_amount: Uint256, _container: felt
 ) {
     alloc_locals;
     ReentrancyGuard.start();
     Pausable.assert_not_paused();
-    assert_only_drip_manager();
+    assert_allowed_borrow_module();
     assert_borrow_not_frozen();
     let (underlying_) = underlying.read();
-    with_attr error_message("drip address is zero") {
-        assert_not_zero(_drip);
+    with_attr error_message("container address is zero") {
+        assert_not_zero(_container);
     }
-    SafeERC20.transfer(underlying_, _drip, _borrow_amount);
+    SafeERC20.transfer(underlying_, _container, _borrow_amount);
     update_borrow_rate(Uint256(0, 0));
 
     let (total_borrowed_) = total_borrowed.read();
     let (new_total_borrowed_) = SafeUint256.add(total_borrowed_, _borrow_amount);
     total_borrowed.write(new_total_borrowed_);
     ReentrancyGuard.end();
-    Borrow.emit(_drip, _borrow_amount);
+    Borrow.emit(_container, _borrow_amount);
     return ();
 }
 
-// @notice repay the drip debt
+// @notice repay the container debt
 // @param _borrow_amount total amount you borrowed 
 // @param _profit profit you made from the money you borrowed
 // @param _loss loss you made from the money you borrowed
 @external
-func repayDripDebt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func repayContainerDebt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(
     _borrowed_amount: Uint256, _profit: Uint256, _loss: Uint256
 ) {
     alloc_locals;
     ReentrancyGuard.start();
     Pausable.assert_not_paused();
-    assert_only_drip_manager();
-    assert_repay_not_frozen();
+    assert_allowed_borrow_module();
 
     let (is_profit_) = uint256_lt(Uint256(0, 0), _profit);
 
@@ -629,13 +624,7 @@ func isBorrowFrozen{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     return(is_borrow_frozen_,);
 }
 
-// @notice check if repay are frozen
-// @return state if repay are frozen
-@view
-func isRepayFrozen{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : felt){
-    let (is_repay_frozen_) = repay_frozen.read();
-    return(is_repay_frozen_,);
-}
+
 
 // @notice get interest rate model address
 // @return interest rate model address
@@ -645,12 +634,58 @@ func interestRateModel{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return (interest_rate_model_,);
 }
 
-// @notice get connected drip manager address
-// @return drip manager address
+// @notice: Is Borrow Module Allowed
+// @param: _token Borrow Module To Check (felt)
+// @return: state 1 if Borrow module allowed, 0 else (felt)
 @view
-func connectedDripManager{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (dripManager: felt) {
-    let (drip_manager_) = drip_manager.read();
-    return (drip_manager_,);
+func isBorrowModuleAllowed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(_caller: felt) -> (state: felt){
+    alloc_locals;
+    let (borrow_module_mask_) = borrow_module_mask.read(_caller);
+    let (forbidden_borrow_module_mask_) = forbidden_borrow_module_mask.read();
+    let (low_) = bitwise_and(forbidden_borrow_module_mask_.low, borrow_module_mask_.low);
+    let (high_) = bitwise_and(forbidden_borrow_module_mask_.high, borrow_module_mask_.high);
+    let (is_nul_) = uint256_eq(Uint256(0,0),Uint256(low_, high_));
+    let (is_bg_)= uint256_lt(Uint256(0,0), forbidden_borrow_module_mask_);
+    if(is_nul_ * is_bg_ == 1){
+        return(1,);
+    } else {
+        return(0,);
+    }
+}
+
+// @notice: Forbidden Borrow modules Mask
+// @return: forbiddenTokenMask Forbidden Token Mask (Uint256)
+@view
+func forbiddenMask{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (forbiddenMask: Uint256) {
+    let (forbidden_mask_) = forbidden_borrow_module_mask.read();
+    return(forbidden_mask_,);
+}
+
+// @notice: Borrow Module Mask
+// @return: borrowModyle Mask(Uint256)
+@view
+func borrowModuleMask{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_borrow_module: felt) -> (borrowModuleMask: Uint256) {
+    let (borrow_module_mask_) = borrow_module_mask.read(_borrow_module);
+    return(borrow_module_mask_,);
+}
+
+// @notice: Borrow Module by Mask
+// @param: _borrow_module_mask Borrow Module Mask (Uint256)
+// @return: borrowModule Borrow Module (felt)
+@view
+func borrowModuleByMask{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_borrow_module_mask: Uint256) -> (borrowModule: felt) {
+    let (borrow_module_) = borrow_module_from_mask.read(_borrow_module_mask);
+    return(borrow_module_,);
+}
+
+// @notice: Borrow Module By Id
+// @param: _id borrow module ID (felt)
+// @return: borrow module Borrow Module (felt)
+@view
+func borrowModuleById{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_id: felt) -> (borrowModule: felt) {
+    let (borrow_module_mask_) = uint256_pow2(Uint256(_id,0));
+    let (borrow_module_) = borrow_module_from_mask.read(borrow_module_mask_);
+    return(borrow_module_,);
 }
 
 
@@ -660,6 +695,14 @@ func connectedDripManager{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 func getRegistery{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (registery : felt){
     let (registery_) = RegisteryAccess.registery();
     return(registery_,);
+}
+
+// @notice: Pool Configurator
+// @return: poolConfigurator Pool Configurator (felt)
+@view
+func poolConfigurator{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (poolConfigurator: felt) {
+    let (pool_configurator_) = pool_configurator.read();
+    return(pool_configurator_,);
 }
 
 // @notice get the underlying asset
@@ -725,17 +768,24 @@ func maxWithdraw{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @param caller caller address
 // @return maxShares the maximum amount of assets you can redeem
 @view
-func maxRedeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(caller: felt) -> (
+func maxRedeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_from: felt) -> (
     maxShares: Uint256
 ) {
     alloc_locals;
-    let (max_assets_fee_) = maxWithdraw(caller);
-    let (step1_) = SafeUint256.mul(max_assets_fee_, Uint256(PRECISION,0));
+    let (balance_) = ERC20.balance_of(_from);
     let (withdraw_fee_) = withdrawFee();
-    let (step2_) = SafeUint256.sub_lt(Uint256(PRECISION,0), withdraw_fee_);
-    let (max_assets_, _) = SafeUint256.div_rem(step1_, step2_);
-    let (max_reedem_) = convertToShares(max_assets_);
-    return (max_reedem_,);
+    let (available_liquidity_) = availableLiquidity();
+    let (available_liquidity_share_) = convertToShares(available_liquidity_);
+    let (is_enough_liquidity_) = uint256_le(balance_, available_liquidity_share_);
+    if (is_enough_liquidity_ == 1) {
+        let (treasury_fee_) = mul_div_up(balance_, withdraw_fee_, Uint256(PRECISION,0));
+        let(new_max_shares_) = SafeUint256.sub_le(balance_, treasury_fee_);
+        return (new_max_shares_,);
+    } else {
+        let (treasury_fee_) = mul_div_up(available_liquidity_share_, withdraw_fee_, Uint256(PRECISION,0));
+        let(new_max_shares_) = SafeUint256.sub_le(available_liquidity_, treasury_fee_);
+        return (new_max_shares_,);
+    }
 }
 
 // @notice max redeem authorized 
@@ -755,16 +805,10 @@ func previewDeposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 func previewMint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     _shares: Uint256
 ) -> (assets: Uint256) {
-    alloc_locals;
-    let (supply_) = ERC20.total_supply();
-    let (all_assets_) = totalAssets();
-    let (supply_is_zero) = uint256_eq(supply_, Uint256(0, 0));
-    if(supply_is_zero == 1){
-        return (_shares,);
-    }
-    let (assets_) = mul_div_up(_shares, all_assets_, supply_);
-    return (assets_,);
+    return convertToAssets(_shares);
 }
+
+
 
 // @notice give you preview of amount shares you will have if you withdraw your assets
 // @param _assets number of assets
@@ -858,7 +902,6 @@ func convertToAssets{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     _shares: Uint256
 ) -> (assets: Uint256) {
     alloc_locals;
-
     let (supply_) = ERC20.total_supply();
     let (all_assets_) = totalAssets();
     let (supply_is_zero) = uint256_eq(supply_, Uint256(0, 0));
@@ -998,6 +1041,11 @@ func withdrawFee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return (withdraw_fee_,);
 }
 
+
+
+
+
+
 //
 // INTERNALS
 //
@@ -1065,23 +1113,8 @@ func assert_borrow_frozen{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return ();
 }
 
-// @notice protector repay not frozen
-func assert_repay_not_frozen{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (is_frozen_) = repay_frozen.read();
-    with_attr error_message("repay frozen") {
-        assert is_frozen_ = 0;
-    }
-    return ();
-}
 
-// @notice protector repay frozen
-func assert_repay_frozen{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (is_frozen_) = repay_frozen.read();
-    with_attr error_message("repay not frozen") {
-        assert is_frozen_ = 1;
-    }
-    return ();
-}
+
 
 func update_interest_rate_model{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_interest_rate_model: felt) {
     with_attr error_message("repay not frozen") {
@@ -1089,7 +1122,6 @@ func update_interest_rate_model{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     }
     interest_rate_model.write(_interest_rate_model);
     update_borrow_rate(Uint256(0,0));
-    NewInterestRateModel.emit(_interest_rate_model);
     return ();
 }
 

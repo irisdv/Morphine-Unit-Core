@@ -1,0 +1,252 @@
+[
+    {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "data": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "Paused",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "Unpaused",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "container",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "NewContainer",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "container",
+                "type": "felt"
+            },
+            {
+                "name": "caller",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "ContainerTaken",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "container",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "ContainerReturned",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "container",
+                "type": "felt"
+            },
+            {
+                "name": "caller",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "ContainerTakenForever",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_registery",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_container",
+                "type": "felt"
+            }
+        ],
+        "name": "nextContainer",
+        "outputs": [
+            {
+                "name": "container",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "containersLength",
+        "outputs": [
+            {
+                "name": "containerLength",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_id",
+                "type": "felt"
+            }
+        ],
+        "name": "idToContainer",
+        "outputs": [
+            {
+                "name": "container",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_container",
+                "type": "felt"
+            }
+        ],
+        "name": "containerToId",
+        "outputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_container",
+                "type": "felt"
+            }
+        ],
+        "name": "isContainer",
+        "outputs": [
+            {
+                "name": "state",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "containerStockLength",
+        "outputs": [
+            {
+                "name": "length",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "addContainer",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_borrowed_amount",
+                "type": "Uint256"
+            },
+            {
+                "name": "_cumulative_index",
+                "type": "Uint256"
+            }
+        ],
+        "name": "takeContainer",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_used_container",
+                "type": "felt"
+            }
+        ],
+        "name": "returnContainer",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_prev",
+                "type": "felt"
+            },
+            {
+                "name": "_container",
+                "type": "felt"
+            },
+            {
+                "name": "_to",
+                "type": "felt"
+            }
+        ],
+        "name": "takeOut",
+        "outputs": [],
+        "type": "function"
+    }
+]

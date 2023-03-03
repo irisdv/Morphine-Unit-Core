@@ -92,10 +92,10 @@
                 "type": "felt"
             }
         ],
-        "name": "openDrip",
+        "name": "openContainer",
         "outputs": [
             {
-                "name": "drip",
+                "name": "container",
                 "type": "felt"
             }
         ],
@@ -124,7 +124,7 @@
                 "type": "felt"
             }
         ],
-        "name": "closeDrip",
+        "name": "closeContainer",
         "outputs": [
             {
                 "name": "remainingFunds",
@@ -140,7 +140,7 @@
                 "type": "felt"
             },
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             },
             {
@@ -159,7 +159,7 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             },
             {
@@ -199,7 +199,7 @@
                 "type": "Uint256"
             }
         ],
-        "name": "approveDrip",
+        "name": "approveContainer",
         "outputs": [],
         "type": "function"
     },
@@ -242,7 +242,7 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             },
             {
@@ -257,7 +257,7 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             },
             {
@@ -285,14 +285,14 @@
                 "type": "felt"
             }
         ],
-        "name": "transferDripOwnership",
+        "name": "transferContainerOwnership",
         "outputs": [],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
@@ -303,7 +303,7 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
@@ -415,22 +415,22 @@
     {
         "inputs": [
             {
-                "name": "_drip_transit",
+                "name": "_borrow_transit",
                 "type": "felt"
             }
         ],
-        "name": "upgradeDripTransit",
+        "name": "upgradeBorrowTransit",
         "outputs": [],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "_drip_configurator",
+                "name": "_borrow_configurator",
                 "type": "felt"
             }
         ],
-        "name": "setConfigurator",
+        "name": "setBorrowConfigurator",
         "outputs": [],
         "type": "function"
     },
@@ -524,7 +524,7 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
@@ -760,10 +760,10 @@
     },
     {
         "inputs": [],
-        "name": "dripTransit",
+        "name": "borrowTransit",
         "outputs": [
             {
-                "name": "dripTransit",
+                "name": "borrowTransit",
                 "type": "felt"
             }
         ],
@@ -772,10 +772,10 @@
     },
     {
         "inputs": [],
-        "name": "dripConfigurator",
+        "name": "borrowConfigurator",
         "outputs": [
             {
-                "name": "dripConfigurator",
+                "name": "borrowConfigurator",
                 "type": "felt"
             }
         ],
@@ -801,10 +801,10 @@
                 "type": "felt"
             }
         ],
-        "name": "getDrip",
+        "name": "getContainer",
         "outputs": [
             {
-                "name": "drip",
+                "name": "container",
                 "type": "felt"
             }
         ],
@@ -818,10 +818,10 @@
                 "type": "felt"
             }
         ],
-        "name": "getDripOrRevert",
+        "name": "getContainerOrRevert",
         "outputs": [
             {
-                "name": "drip",
+                "name": "container",
                 "type": "felt"
             }
         ],
@@ -831,11 +831,11 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
-        "name": "dripParameters",
+        "name": "containerParameters",
         "outputs": [
             {
                 "name": "borrowedAmount",
@@ -856,11 +856,11 @@
     {
         "inputs": [
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
-        "name": "calcDripAccruedInterest",
+        "name": "calcContainerAccruedInterest",
         "outputs": [
             {
                 "name": "borrowedAmount",
@@ -926,7 +926,7 @@
                 "type": "Uint256"
             }
         ],
-        "name": "get_max_index",
+        "name": "getMaxIndex",
         "outputs": [
             {
                 "name": "max_index",
@@ -947,7 +947,7 @@
                 "type": "Uint256"
             }
         ],
-        "name": "calc_enabled_tokens",
+        "name": "calcEnabledTokens",
         "outputs": [
             {
                 "name": "total_tokens_enabled",

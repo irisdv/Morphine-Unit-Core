@@ -23,7 +23,7 @@ func treasury() -> (treasury : felt) {
 }
 
 @storage_var
-func drip_factory() -> (drip_factory : felt) {
+func container_factory() -> (container_factory : felt) {
 }
 
 @storage_var
@@ -31,7 +31,7 @@ func oracle_transit() -> (address : felt) {
 }
 
 @storage_var
-func drip_hash() -> (address : felt) {
+func container_hash() -> (address : felt) {
 }
 
 @storage_var
@@ -39,36 +39,24 @@ func pools_length() -> (len: felt) {
 }
 
 @storage_var
-func is_pool(address: felt) -> (is_drip_account: felt) {
+func is_pool(address: felt) -> (is_container_account: felt) {
 }
 
 @storage_var
-func id_to_pool(id: felt) -> (drip: felt) {
-}
-
-@storage_var
-func drip_managers_length() -> (len: felt) {
-}
-
-@storage_var
-func is_drip_manager(address: felt) -> (is_drip_account: felt) {
-}
-
-@storage_var
-func id_to_drip_manager(id: felt) -> (drip: felt) {
+func id_to_pool(id: felt) -> (container: felt) {
 }
 
 // @notice: Constructor call only once when contract is deployed
 // @param: _owner: Owner of the contract
 // @param: _treasury: Address of the treasury contract
 // @param: _oracle_transit: Address of the oracle transit contract
-// @param: _drip_hash : drip hash 
+// @param: _container_hash : container hash 
 @constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_owner : felt, _treasury: felt, _oracle_transit: felt, _drip_hash: felt) {
+func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_owner : felt, _treasury: felt, _oracle_transit: felt, _container_hash: felt) {
     Ownable.initializer(_owner);
     treasury.write(_treasury);
     oracle_transit.write(_oracle_transit);
-    drip_hash.write(_drip_hash);
+    container_hash.write(_container_hash);
     return();
 }
 
@@ -80,20 +68,20 @@ func getTreasury{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return(treasury_,);
 }
 
-// @notice: get drip factory address
-// @return: drip factory address
+// @notice: get container factory address
+// @return: container factory address
 @view
-func dripFactory{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (drip_factory : felt) {
-    let (drip_factory_) = drip_factory.read();
-    return(drip_factory_,);
+func containerFactory{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (container_factory : felt) {
+    let (container_factory_) = container_factory.read();
+    return(container_factory_,);
 }
 
-// @notice: get drip hash address
-// @return: drip hash address
+// @notice: get container hash
+// @return: container_hash container hash 
 @view
-func dripHash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (drip_hash : felt) {
-    let (drip_hash_) = drip_hash.read();
-    return(drip_hash_,);
+func containerHash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (container_hash : felt) {
+    let (container_hash_) = container_hash.read();
+    return(container_hash_,);
 }
 
 // @notice: get owner address
@@ -121,13 +109,14 @@ func isPool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_
     return(state_,);
 }
 
-// @notice: check if address is a drip manager
-// @param: _drip_manager: address to check
-// @return: is_drip_manager: true if address is a drip manager
+// @notice: check if address is a borrow manager
+// @param: _container_manager: address to check
+// @return: is_borrow_manager: true if address is a borrow manager
 @view
-func isDripManager{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_drip_manager: felt) -> (state : felt) {
-    let (state_) = is_drip_manager.read(_drip_manager);
-    return(state_,);
+func isBorrowManager{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_borrow_manager: felt) -> (state : felt) {
+    // To complete
+
+    return(0,);
 }
 
 // @notice: get pool address by id
@@ -140,29 +129,12 @@ func idToPool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     return(pool_,);
 }
 
-// @notice: get drip manager address by id
-// @param: _id: id of the drip manager
-// @return: drip manager address
-@view
-func idToDripManager{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_id: felt) -> (dripManager : felt) {
-    let (drip_manager_) = id_to_drip_manager.read(_id);
-    return(drip_manager_,);
-}
-
 // @notice: get pools length
 // @return: pools length
 @view
 func poolsLength{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (poolsLength : felt) {
     let (pools_length_) = pools_length.read();
     return(pools_length_,);
-}
-
-// @notice: get drip managers length
-// @return: drip managers length
-@view
-func dripManagerLength{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (dripManagerLength : felt) {
-    let (drip_managers_length_) = drip_managers_length.read();
-    return(drip_managers_length_,);
 }
 
 // @notice: set new owner
@@ -186,15 +158,15 @@ func setTreasury{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return();
 }
 
-// @notice: set new drip factory address
-// @param: _newDripFactory: new drip factory address
+// @notice: set new Container factory address
+// @param: _newContainerFactory: new Container factory address
 @external
-func setDripFactory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_drip_factory: felt) {
+func setContainerFactory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_container_factory: felt) {
     Ownable.assert_only_owner();
-    with_attr error_message("Drip factory: address is zero") {
-        assert_not_zero(_drip_factory);
+    with_attr error_message("Container factory: address is zero") {
+        assert_not_zero(_container_factory);
     }
-    drip_factory.write(_drip_factory);
+    container_factory.write(_container_factory);
     return();
 }
 
@@ -210,15 +182,15 @@ func setOracleTransit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     return();
 }
 
-// @notice: set new drip hash address
-// @param: _newDripHash: new drip hash address
+// @notice: set new container hash 
+// @param: _newContainerHash: new container hash address
 @external
-func setDripHash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_new_drip_hash : felt) {
+func setContainerHash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_new_container_hash : felt) {
     Ownable.assert_only_owner();
-    with_attr error_message("Drip hash: address is zero") {
-        assert_not_zero(_new_drip_hash);
+    with_attr error_message("Container hash: hash is zero") {
+        assert_not_zero(_new_container_hash);
     }
-    drip_hash.write(_new_drip_hash);
+    container_hash.write(_new_container_hash);
     return();
 }
 
@@ -241,25 +213,4 @@ func addPool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     return();
 }
 
-// @notice: add new drip manager
-// @param: _drip_manager: new drip manager address
-@external
-func addDripManager{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(_drip_manager : felt) {
-    Ownable.assert_only_owner();
-    let (drip_manager_exists_) = is_drip_manager.read(_drip_manager);
-    
-    with_attr error_message("already exist"){
-        assert drip_manager_exists_ = 0;
-    }
-
-    with_attr error_message("address is zero"){
-        assert_not_zero(_drip_manager);
-    }
-
-    is_drip_manager.write(_drip_manager, 1);
-    let (drip_managers_length_) = drip_managers_length.read();
-    id_to_drip_manager.write(drip_managers_length_, _drip_manager);
-    drip_managers_length.write(drip_managers_length_ + 1);
-    return();
-}
 

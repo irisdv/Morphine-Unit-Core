@@ -14,9 +14,9 @@ from starkware.cairo.common.math import assert_not_zero
 from openzeppelin.token.erc20.IERC20 import IERC20
 from openzeppelin.security.safemath.library import SafeUint256
 from openzeppelin.security.reentrancyguard.library import ReentrancyGuard
-from morphine.adapters.baseAdapter import BaseAdapter, drip_manager, drip_transit, target
+from morphine.adapters.baseAdapter import BaseAdapter, borrow_manager, borrow_transit, target
 from morphine.interfaces.IERC4626 import IERC4626
-from morphine.interfaces.IDripManager import IDripManager
+from morphine.interfaces.IBorrowManager import IBorrowManager
 from morphine.utils.various import DEPOSIT_SELECTOR, REDEEM_SELECTOR
 
 /// @title: ERC4626 adapter
@@ -37,24 +37,24 @@ func token() -> (address : felt) {
 //
 
 // @notice: Constructor for the adapter will be called only once.
-// @param: _drip_manager drip manager address
+// @param: _borrow_manager borrow manager address
 // @param: _target target address
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        _drip_manager: felt,
+        _borrow_manager: felt,
         _target: felt) {
     alloc_locals;
-    BaseAdapter.initializer(_drip_manager, _target);
+    BaseAdapter.initializer(_borrow_manager, _target);
     let (token_) = IERC4626.asset(_target);
     token.write(token_);  
 
-    let (underlying_token_mask_) = IDripManager.tokenMask(_drip_manager, token_);
+    let (underlying_token_mask_) = IBorrowManager.tokenMask(_borrow_manager, token_);
     let (is_zero_) = uint256_eq(underlying_token_mask_, Uint256(0,0));
     with_attr error_message("underlying token not allowed") {
         assert is_zero_ = 0;
     }
 
-    let (vault_token_mask_) = IDripManager.tokenMask(_drip_manager, _target);
+    let (vault_token_mask_) = IBorrowManager.tokenMask(_borrow_manager, _target);
     let (is_zero_) = uint256_eq(vault_token_mask_, Uint256(0,0));
     with_attr error_message("vault token not allowed") {
         assert is_zero_ = 0;
@@ -67,20 +67,20 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 //  Views
 //
 
-// @notice: Returns the drip manager address
-// @return: drip manager address
+// @notice: Returns the borrow manager address
+// @return: borrow manager address
 @view
-func dripManager{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (dripManager: felt){
-    let (drip_manager_) = drip_manager.read();
-    return (drip_manager_,);
+func borrowManager{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (borrowManager: felt){
+    let (borrow_manager_) = borrow_manager.read();
+    return (borrow_manager_,);
 }
 
-// @notice: Returns the drip transit address
-// @return: drip transit address
+// @notice: Returns the borrow transit address
+// @return: borrow transit address
 @view
-func dripTransit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (dripTransit: felt){
-    let (drip_transit_) = drip_transit.read();
-    return (drip_transit_,);
+func borrowTransit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (borrowTransit: felt){
+    let (borrow_transit_) = borrow_transit.read();
+    return (borrow_transit_,);
 }
 
 // @notice: Returns the target address
@@ -100,14 +100,14 @@ func targetContract{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 @external 
 func depositAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (shares: Uint256) {
     ReentrancyGuard.start();
-    let (drip_manager_) = dripManager();
+    let (borrow_manager_) = borrowManager(); 
     let (caller_) = get_caller_address();
-    let (drip_) = IDripManager.getDripOrRevert(drip_manager_, caller_);
+    let (container_) = IBorrowManager.getContainerOrRevert(borrow_manager_, caller_);
     let (token_) = token.read();
-    let (balance_) = IERC20.balanceOf(token_, drip_);
+    let (balance_) = IERC20.balanceOf(token_, container_);
     let (is_lt_) = uint256_lt(Uint256(0,0), balance_);
     if(is_lt_ == 1){
-        let (shares_) = _deposit(drip_, balance_, 1);
+        let (shares_) = _deposit(container_, balance_, 1);
         ReentrancyGuard.end();
         return (shares_,);
     } else {
@@ -122,10 +122,10 @@ func depositAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 @external 
 func deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_amount: Uint256) -> (shares: Uint256) {
     ReentrancyGuard.start();
-    let (drip_manager_) = dripManager();
+    let (borrow_manager_) = borrowManager(); 
     let (caller_) = get_caller_address();
-    let (drip_) = IDripManager.getDripOrRevert(drip_manager_, caller_);
-    let (shares_) = _deposit(drip_, _amount, 0);
+    let (container_) = IBorrowManager.getContainerOrRevert(borrow_manager_, caller_);
+    let (shares_) = _deposit(container_, _amount, 0);
     ReentrancyGuard.end();
     return (shares_,);
 }
@@ -135,14 +135,14 @@ func deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_a
 @external
 func redeemAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (assets: Uint256) {
     ReentrancyGuard.start();
-    let (drip_manager_) = dripManager();
+    let (borrow_manager_) = borrowManager(); 
     let (caller_) = get_caller_address();
-    let (drip_) = IDripManager.getDripOrRevert(drip_manager_, caller_);
+    let (container_) = IBorrowManager.getContainerOrRevert(borrow_manager_, caller_);
     let (token_) = targetContract();
-    let (balance_) = IERC20.balanceOf(token_, drip_);
+    let (balance_) = IERC20.balanceOf(token_, container_);
     let (is_lt_) = uint256_lt(Uint256(0,0), balance_);
     if(is_lt_ == 1){
-        let (assets_) = _redeem(drip_, balance_, 1);
+        let (assets_) = _redeem(container_, balance_, 1);
         ReentrancyGuard.end();
         return (assets_,);
     } else {
@@ -157,10 +157,10 @@ func redeemAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 @external 
 func redeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_amount: Uint256) -> (assets: Uint256) {
     ReentrancyGuard.start();
-    let (drip_manager_) = drip_manager.read();
+    let (borrow_manager_) = borrow_manager.read();
     let (caller_) = get_caller_address();
-    let (drip_) = IDripManager.getDripOrRevert(drip_manager_, caller_);
-    let (assets_) = _redeem(drip_, _amount, 0);
+    let (container_) = IBorrowManager.getContainerOrRevert(borrow_manager_, caller_);
+    let (assets_) = _redeem(container_, _amount, 0);
     ReentrancyGuard.end();
     return (assets_,);
 }
@@ -171,11 +171,11 @@ func redeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_am
 
 // @notice: Deposits tokens
 // @custom: internal function
-// @param: _drip drip address
+// @param: _container container address
 // @param: _amount amount of tokens to deposit
 // @param: _disable_token_in boolean to disable token in
 // @return: shares amount of shares
-func _deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_drip: felt, _amount: Uint256, _disable_token_in: felt) -> (shares: Uint256) {
+func _deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_container: felt, _amount: Uint256, _disable_token_in: felt) -> (shares: Uint256) {
     alloc_locals;
     let (token_in_) = token.read();
     let (token_out_) = targetContract();
@@ -188,18 +188,18 @@ func _deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_
     let (calldata) = alloc();
     assert calldata[0] = _amount.low;
     assert calldata[1] = _amount.high;
-    assert calldata[2] = _drip;
-    let (retdata_len: felt, retdata: felt*) = BaseAdapter.safe_execute_drip(_drip, 1, tokens_in, 1, tokens_out, 1, 1, disable_token_in, DEPOSIT_SELECTOR, 3, calldata);
+    assert calldata[2] = _container;
+    let (retdata_len: felt, retdata: felt*) = BaseAdapter.safe_execute_container(_container, 1, tokens_in, 1, tokens_out, 1, 1, disable_token_in, DEPOSIT_SELECTOR, 3, calldata);
     return (Uint256(retdata[0], retdata[1]),);
 }
 
 // @notice: Redeem tokens
 // @custom: internal function
-// @param: _drip drip address
+// @param: _container container address
 // @param: _amount amount of shares to redeem
 // @param: _disable_token_out boolean to disable token out
 // @return: amount of assets redeemed
-func _redeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_drip: felt, _amount: Uint256, _disable_token_in: felt) -> (assets: Uint256) {
+func _redeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_container: felt, _amount: Uint256, _disable_token_in: felt) -> (assets: Uint256) {
     alloc_locals;
     let (token_out_) = token.read();
     let (token_in_) = targetContract();
@@ -212,9 +212,9 @@ func _redeem{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(_d
     let (calldata) = alloc();
     assert calldata[0] = _amount.low;
     assert calldata[1] = _amount.high;
-    assert calldata[2] = _drip;
-    assert calldata[3] = _drip;
-    let (retdata_len: felt, retdata: felt*) = BaseAdapter.safe_execute_drip(_drip, 1, tokens_in, 1, tokens_out, 1, 1, disable_token_in, REDEEM_SELECTOR, 4, calldata);
+    assert calldata[2] = _container;
+    assert calldata[3] = _container;
+    let (retdata_len: felt, retdata: felt*) = BaseAdapter.safe_execute_container(_container, 1, tokens_in, 1, tokens_out, 1, 1, disable_token_in, REDEEM_SELECTOR, 4, calldata);
     return (Uint256(retdata[0], retdata[1]),);
 }
 

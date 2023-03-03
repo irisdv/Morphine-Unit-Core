@@ -123,30 +123,6 @@
         "type": "event"
     },
     {
-        "data": [],
-        "keys": [],
-        "name": "BorrowFrozen",
-        "type": "event"
-    },
-    {
-        "data": [],
-        "keys": [],
-        "name": "BorrowUnfrozen",
-        "type": "event"
-    },
-    {
-        "data": [],
-        "keys": [],
-        "name": "RepayFrozen",
-        "type": "event"
-    },
-    {
-        "data": [],
-        "keys": [],
-        "name": "RepayUnfrozen",
-        "type": "event"
-    },
-    {
         "data": [
             {
                 "name": "from_",
@@ -188,51 +164,7 @@
             }
         ],
         "keys": [],
-        "name": "NewWithdrawFee",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "value",
-                "type": "Uint256"
-            }
-        ],
-        "keys": [],
-        "name": "NewExpectedLiquidityLimit",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "drip",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "NewDripManagerConnected",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "value",
-                "type": "Uint256"
-            }
-        ],
-        "keys": [],
         "name": "UncoveredLoss",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "interest_rate_model",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "NewInterestRateModel",
         "type": "event"
     },
     {
@@ -251,14 +183,6 @@
             },
             {
                 "name": "_symbol",
-                "type": "felt"
-            },
-            {
-                "name": "_expected_liquidity_limit",
-                "type": "Uint256"
-            },
-            {
-                "name": "_interest_rate_model",
                 "type": "felt"
             }
         ],
@@ -287,18 +211,6 @@
     {
         "inputs": [],
         "name": "unfreezeBorrow",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "freezeRepay",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "unfreezeRepay",
         "outputs": [],
         "type": "function"
     },
@@ -338,11 +250,33 @@
     {
         "inputs": [
             {
-                "name": "_drip_manager",
+                "name": "_borrow_module",
                 "type": "felt"
             }
         ],
-        "name": "connectDripManager",
+        "name": "connectBorrowModule",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_fobid_mask",
+                "type": "Uint256"
+            }
+        ],
+        "name": "setForbidMask",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_pool_configurator",
+                "type": "felt"
+            }
+        ],
+        "name": "setConfigurator",
         "outputs": [],
         "type": "function"
     },
@@ -441,7 +375,7 @@
                 "type": "Uint256"
             },
             {
-                "name": "_drip",
+                "name": "_container",
                 "type": "felt"
             }
         ],
@@ -464,7 +398,7 @@
                 "type": "Uint256"
             }
         ],
-        "name": "repayDripDebt",
+        "name": "repayContainerDebt",
         "outputs": [],
         "type": "function"
     },
@@ -494,18 +428,6 @@
     },
     {
         "inputs": [],
-        "name": "isRepayFrozen",
-        "outputs": [
-            {
-                "name": "state",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
         "name": "interestRateModel",
         "outputs": [
             {
@@ -517,11 +439,79 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "connectedDripManager",
+        "inputs": [
+            {
+                "name": "_caller",
+                "type": "felt"
+            }
+        ],
+        "name": "isBorrowModuleAllowed",
         "outputs": [
             {
-                "name": "dripManager",
+                "name": "state",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "forbiddenMask",
+        "outputs": [
+            {
+                "name": "forbiddenMask",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_borrow_module",
+                "type": "felt"
+            }
+        ],
+        "name": "borrowModuleMask",
+        "outputs": [
+            {
+                "name": "borrowModuleMask",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_borrow_module_mask",
+                "type": "Uint256"
+            }
+        ],
+        "name": "borrowModuleByMask",
+        "outputs": [
+            {
+                "name": "borrowModule",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_id",
+                "type": "felt"
+            }
+        ],
+        "name": "borrowModuleById",
+        "outputs": [
+            {
+                "name": "borrowModule",
                 "type": "felt"
             }
         ],
@@ -534,6 +524,18 @@
         "outputs": [
             {
                 "name": "registery",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "poolConfigurator",
+        "outputs": [
+            {
+                "name": "poolConfigurator",
                 "type": "felt"
             }
         ],
@@ -606,7 +608,7 @@
     {
         "inputs": [
             {
-                "name": "caller",
+                "name": "_from",
                 "type": "felt"
             }
         ],
